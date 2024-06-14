@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+    <changeSet id="Create Users Table" author="P.Algayev">
+        <createTable tableName="users">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(200)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(129)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(120)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="Adjust User ID Sequence" author="P.Algayev">
+        <sql>
+            SELECT setval('users_id_seq', 2);
+        </sql>
+    </changeSet>
+
+    <changeSet id="Insert ADMIN" author="P.Algayev">
+        <insert tableName="users">
+            <column name="id" value="1"/>
+            <column name="email" value="admin@admin.com"/>
+            <column name="password"
+                    value="$2a$12$NAySfD/B5H.NYGB8CxtFkeUkncY7NQ3h4289AooUpj2d66ozzlrl6"/>  <!--password: adminpassword -->
+            <column name="username" value="ADMIN"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="Insert user: polad" author="P.Algayev">
+        <insert tableName="users">
+            <column name="id" value="2"/>
+            <column name="email" value="polad@user.com"/>
+            <column name="password"
+                    value="polad_password"/> <!--fixme password -->
+            <column name="username" value="polad"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="Create Role Table" author="P.Algayev">
+        <createTable tableName="roles">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="Insert ADMIN role" author="P.Algayev">
+        <insert tableName="roles">
+            <column name="id" value="1"/>
+            <column name="name" value="ROLE_ADMIN"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="Insert USER role" author="P.Algayev">
+        <insert tableName="roles">
+            <column name="id" value="2"/>
+            <column name="name" value="ROLE_USER"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="Create users_roles table" author="P.Algayev">
+        <createTable tableName="users_roles">
+            <column name="user_id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="users_roles"
+                baseColumnNames="user_id"
+                constraintName="fk_users_roles_user_id"
+                referencedTableName="users"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="users_roles"
+                baseColumnNames="role_id"
+                constraintName="fk_users_roles_role_id"
+                referencedTableName="roles"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="Assign ADMIN role to ADMIN user" author="P.Algayev">
+        <insert tableName="users_roles">
+            <column name="user_id" value="1"/>
+            <column name="role_id" value="1"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="Create User External Project Table" author="P.Algayev">
+        <createTable tableName="user_external_projects">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="user_external_projects"
+                baseColumnNames="user_id"
+                constraintName="fk_user_id"
+                referencedTableName="users"
+                referencedColumnNames="id"/>
+    </changeSet>
+</databaseChangeLog>
