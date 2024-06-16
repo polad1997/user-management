@@ -1,7 +1,6 @@
 package com.sky.identity.usermanagement.service;
 
 import com.sky.identity.usermanagement.domain.model.dto.UserDTO;
-import com.sky.identity.usermanagement.domain.model.entity.Role;
 import com.sky.identity.usermanagement.domain.model.entity.User;
 import com.sky.identity.usermanagement.domain.model.request.CreateUserRequest;
 import com.sky.identity.usermanagement.domain.repository.UserRepository;
@@ -31,11 +30,9 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setUsername(request.getUsername());
-
-        Role role = roleService.getUserRole();
-        user.getRoles().add(role);
+        user.getRoles().add(roleService.getdefaultUserRole());
 
         var savedUser = userRepository.save(user);
-        return new UserDTO(savedUser.getId(), savedUser.getUsername(), savedUser.getEmail());
+        return new UserDTO(savedUser.getId(), savedUser.getEmail(), savedUser.getUsername());
     }
 }

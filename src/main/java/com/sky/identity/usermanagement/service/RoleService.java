@@ -13,7 +13,7 @@ public class RoleService {
         this.roleRepository = roleRepository;
     }
 
-    public Role getUserRole() {
-        return roleRepository.findByName("ROLE_USER").orElseThrow(() -> new IllegalStateException("Role not found"));
+    public Role getdefaultUserRole() {
+        return roleRepository.findByName("ROLE_USER").orElseThrow(() -> new IllegalStateException("There is no default (USER) role in the database."));
     }
 }
