@@ -4,6 +4,7 @@ import com.sky.identity.usermanagement.domain.model.dto.UserDTO;
 import com.sky.identity.usermanagement.domain.model.entity.User;
 import com.sky.identity.usermanagement.domain.model.request.CreateUserRequest;
 import com.sky.identity.usermanagement.domain.repository.UserRepository;
+import com.sky.identity.usermanagement.exception.UserNotFoundException;
 import com.sky.identity.usermanagement.validator.UserValidator;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,5 +35,10 @@ public class UserService {
 
         var savedUser = userRepository.save(user);
         return new UserDTO(savedUser.getId(), savedUser.getEmail(), savedUser.getUsername());
+    }
+
+    public UserDTO getUserById(Long id) {
+        var user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+        return new UserDTO(user.getId(), user.getEmail(), user.getUsername());
     }
 }

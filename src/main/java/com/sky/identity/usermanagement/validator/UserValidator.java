@@ -1,6 +1,7 @@
 package com.sky.identity.usermanagement.validator;
 
 import com.sky.identity.usermanagement.domain.repository.UserRepository;
+import com.sky.identity.usermanagement.exception.UserAlreadyExistsException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,11 +15,11 @@ public class UserValidator {
 
     public void validateUser(String username, String email) {
         userRepository.findByUsername(username).ifPresent(existingUser -> {
-            throw new IllegalArgumentException("Username already exists");
+            throw new UserAlreadyExistsException("Username already exists");
         });
 
         userRepository.findByEmail(email).ifPresent(existingUser -> {
-            throw new IllegalArgumentException("Email already exists");
+            throw new UserAlreadyExistsException("Email already exists");
         });
     }
 }

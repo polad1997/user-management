@@ -6,6 +6,11 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
 
     <changeSet id="Create Users Table" author="P.Algayev">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="users"/>
+            </not>
+        </preConditions>
         <createTable tableName="users">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -24,7 +29,7 @@
 
     <changeSet id="Adjust User ID Sequence" author="P.Algayev">
         <sql>
-            SELECT setval('users_id_seq', 2);
+            SELECT setval('users_id_seq', 1);
         </sql>
     </changeSet>
 
@@ -38,17 +43,12 @@
         </insert>
     </changeSet>
 
-    <changeSet id="Insert user: polad" author="P.Algayev">
-        <insert tableName="users">
-            <column name="id" value="2"/>
-            <column name="email" value="polad@user.com"/>
-            <column name="password"
-                    value="polad_password"/> <!--fixme password -->
-            <column name="username" value="polad"/>
-        </insert>
-    </changeSet>
-
     <changeSet id="Create Role Table" author="P.Algayev">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="roles"/>
+            </not>
+        </preConditions>
         <createTable tableName="roles">
             <column name="id" type="BIGINT">
                 <constraints primaryKey="true" nullable="false"/>
@@ -74,6 +74,11 @@
     </changeSet>
 
     <changeSet id="Create users_roles table" author="P.Algayev">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="users_roles"/>
+            </not>
+        </preConditions>
         <createTable tableName="users_roles">
             <column name="user_id" type="BIGINT">
                 <constraints primaryKey="true" nullable="false"/>
@@ -106,6 +111,11 @@
     </changeSet>
 
     <changeSet id="Create User External Project Table" author="P.Algayev">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_external_projects"/>
+            </not>
+        </preConditions>
         <createTable tableName="user_external_projects">
             <column name="id" type="BIGINT">
                 <constraints primaryKey="true" nullable="false"/>
