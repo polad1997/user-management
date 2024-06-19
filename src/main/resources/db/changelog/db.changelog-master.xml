@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
 
-    <changeSet id="Create Users Table" author="P.Algayev">
+    <changeSet id="create-user-table" author="P.Algayev">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="users"/>
@@ -24,26 +24,30 @@
             <column name="username" type="VARCHAR(120)">
                 <constraints nullable="false" unique="true"/>
             </column>
+            <column name="is_active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 
-    <changeSet id="Adjust User ID Sequence" author="P.Algayev">
+    <changeSet id="adjust-user-id-sequence" author="P.Algayev">
         <sql>
             SELECT setval('users_id_seq', 1);
         </sql>
     </changeSet>
 
-    <changeSet id="Insert ADMIN" author="P.Algayev">
+    <changeSet id="insert-admin" author="P.Algayev">
         <insert tableName="users">
             <column name="id" value="1"/>
             <column name="email" value="admin@admin.com"/>
             <column name="password"
                     value="$2a$12$NAySfD/B5H.NYGB8CxtFkeUkncY7NQ3h4289AooUpj2d66ozzlrl6"/>  <!--password: adminpassword -->
             <column name="username" value="ADMIN"/>
+            <column name="is_active" value="true"/>
         </insert>
     </changeSet>
 
-    <changeSet id="Create Role Table" author="P.Algayev">
+    <changeSet id="create-role-table" author="P.Algayev">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="roles"/>
@@ -59,21 +63,21 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="Insert ADMIN role" author="P.Algayev">
+    <changeSet id="insert-admin-role" author="P.Algayev">
         <insert tableName="roles">
             <column name="id" value="1"/>
             <column name="name" value="ROLE_ADMIN"/>
         </insert>
     </changeSet>
 
-    <changeSet id="Insert USER role" author="P.Algayev">
+    <changeSet id="insert-user-role" author="P.Algayev">
         <insert tableName="roles">
             <column name="id" value="2"/>
             <column name="name" value="ROLE_USER"/>
         </insert>
     </changeSet>
 
-    <changeSet id="Create users_roles table" author="P.Algayev">
+    <changeSet id="create-users_roles-table" author="P.Algayev">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="users_roles"/>
@@ -103,14 +107,14 @@
                 referencedColumnNames="id"/>
     </changeSet>
 
-    <changeSet id="Assign ADMIN role to ADMIN user" author="P.Algayev">
+    <changeSet id="assign-admin-role-to-admin-user" author="P.Algayev">
         <insert tableName="users_roles">
             <column name="user_id" value="1"/>
             <column name="role_id" value="1"/>
         </insert>
     </changeSet>
 
-    <changeSet id="Create User External Project Table" author="P.Algayev">
+    <changeSet id="create-user-external-projects-table" author="P.Algayev">
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="user_external_projects"/>

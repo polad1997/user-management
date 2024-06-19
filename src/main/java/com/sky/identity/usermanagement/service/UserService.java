@@ -3,6 +3,7 @@ package com.sky.identity.usermanagement.service;
 import com.sky.identity.usermanagement.domain.model.dto.UserDTO;
 import com.sky.identity.usermanagement.domain.model.entity.User;
 import com.sky.identity.usermanagement.domain.model.request.CreateUserRequest;
+import com.sky.identity.usermanagement.domain.model.request.UpdatePasswordRequest;
 import com.sky.identity.usermanagement.domain.repository.UserRepository;
 import com.sky.identity.usermanagement.exception.UserNotFoundException;
 import com.sky.identity.usermanagement.validator.UserValidator;
@@ -40,5 +41,19 @@ public class UserService {
     public UserDTO getUserById(Long id) {
         var user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
         return new UserDTO(user.getId(), user.getEmail(), user.getUsername());
+    }
+
+    public UserDTO updateUserPassword(UpdatePasswordRequest request) {
+        var user = userRepository.findById(request.getId()).orElseThrow(() -> new UserNotFoundException("User not found with id: " + request.getId()));
+        if (request.getPassword() == null || request.getPassword().isEmpty()) {
+            throw new IllegalArgumentException("Password must not be empty");
+        }
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
+        return new UserDTO(user.getId(), user.getEmail(), user.getUsername());
+    }
+
+    public void deleteUserById(Long id) {
+        userRepository.deleteById(id);
     }
 }

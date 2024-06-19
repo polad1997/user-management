@@ -1,7 +1,6 @@
 package com.sky.identity.usermanagement.configuration.security;
 
 import com.sky.identity.usermanagement.service.security.IdentityUserDetailsService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,10 +12,13 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final IdentityUserDetailsService identityUserDetailsService;
+
+    public SecurityConfig(IdentityUserDetailsService identityUserDetailsService) {
+        this.identityUserDetailsService = identityUserDetailsService;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

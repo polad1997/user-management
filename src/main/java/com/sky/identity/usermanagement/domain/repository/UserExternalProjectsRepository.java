@@ -3,5 +3,9 @@ package com.sky.identity.usermanagement.domain.repository;
 import com.sky.identity.usermanagement.domain.model.entity.UserExternalProject;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserExternalProjectRepository extends JpaRepository<UserExternalProject, String> {
+import java.util.Optional;
+
+public interface UserExternalProjectsRepository extends JpaRepository<UserExternalProject, String> {
+
+    Optional<UserExternalProject> findByName(String projectName);
 }

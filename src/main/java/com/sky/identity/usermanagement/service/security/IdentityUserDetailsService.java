@@ -2,7 +2,6 @@ package com.sky.identity.usermanagement.service.security;
 
 import com.sky.identity.usermanagement.domain.model.entity.User;
 import com.sky.identity.usermanagement.domain.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,10 +11,13 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class IdentityUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+
+    public IdentityUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
