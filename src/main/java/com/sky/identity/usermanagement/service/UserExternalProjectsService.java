@@ -1,5 +1,6 @@
 package com.sky.identity.usermanagement.service;
 
+import com.sky.identity.usermanagement.domain.model.dto.ExternalProjectsDTO;
 import com.sky.identity.usermanagement.domain.model.dto.UserDTO;
 import com.sky.identity.usermanagement.domain.model.dto.UserExternalProjectsDTO;
 import com.sky.identity.usermanagement.domain.model.entity.User;
@@ -10,6 +11,7 @@ import com.sky.identity.usermanagement.exception.ProjectAlreadyAssignedException
 import com.sky.identity.usermanagement.exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,6 +39,14 @@ public class UserExternalProjectsService {
         return new UserExternalProjectsDTO(userDTO, savedProject.getId(), savedProject.getName());
     }
 
+    public List<ExternalProjectsDTO> getExternalProjectsByUser(Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        var externalProjects = userExternalProjectsRepository.findAllByUserId(userId);
+        return mapToUserExternalProjectsDTOs(externalProjects);
+    }
+
     private void checkIfProjectAlreadyAssigned(User user, String projectName) {
         Optional<UserExternalProject> existingProject = userExternalProjectsRepository.findByNameAndUserId(projectName, user.getId());
         if (existingProject.isPresent()) {
@@ -50,4 +60,18 @@ public class UserExternalProjectsService {
         newProject.setName(projectName);
         return newProject;
     }
+
+    private List<ExternalProjectsDTO> mapToUserExternalProjectsDTOs(List<UserExternalProject> externalProjects) {
+        return externalProjects.stream()
+                .map(this::mapEntityToDto)
+                .toList();
+    }
+
+    private ExternalProjectsDTO mapEntityToDto(UserExternalProject entity) {
+        var dto = new ExternalProjectsDTO();
+        dto.setId(entity.getId());
+        dto.setProjectName(entity.getName());
+        return dto;
+    }
+
 }

@@ -1,10 +1,10 @@
 package com.sky.identity.usermanagement.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sky.identity.usermanagement.domain.model.dto.ExternalProjectsDTO;
 import com.sky.identity.usermanagement.domain.model.dto.UserDTO;
 import com.sky.identity.usermanagement.domain.model.dto.UserExternalProjectsDTO;
 import com.sky.identity.usermanagement.domain.model.request.AddExternalProjectToUserRequest;
-import com.sky.identity.usermanagement.exception.ProjectAlreadyAssignedException;
 import com.sky.identity.usermanagement.exception.UserNotFoundException;
 import com.sky.identity.usermanagement.service.UserExternalProjectsService;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,11 +16,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -35,8 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @ActiveProfiles("test")
-//@Sql(scripts = "/test-data.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-//@Sql(scripts = "/clear-database.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class UserExternalProjectsResourceTest {
 
     private MockMvc mockMvc;
@@ -134,21 +134,61 @@ class UserExternalProjectsResourceTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    void addExternalProjectToUser_ProjectAlreadyAssigned() throws Exception {
+    @WithMockUser(roles = "USER")
+    void getExternalProjectsByUser_Success() throws Exception {
         Long userId = 1L;
-        AddExternalProjectToUserRequest request = new AddExternalProjectToUserRequest();
-        request.setExternalProjectName("test project");
 
-        doThrow(new ProjectAlreadyAssignedException("Project is already assigned to the user id: " + userId)).when(userExternalProjectsService).addExternalProjectToUser(userId, request.externalProjectName);
+        ExternalProjectsDTO project1 = new ExternalProjectsDTO(1L, "Project 1");
+        ExternalProjectsDTO project2 = new ExternalProjectsDTO(2L, "Project 2");
 
-        mockMvc.perform(post("/users/{id}/external-projects", userId)
+        List<ExternalProjectsDTO> externalProjectsDTO = new ArrayList<>();
+        externalProjectsDTO.add(project1);
+        externalProjectsDTO.add(project2);
+
+        when(userExternalProjectsService.getExternalProjectsByUser(eq(userId)))
+                .thenReturn(externalProjectsDTO);
+
+        mockMvc.perform(get("/users/{id}/external-projects", userId)
                         .param("id", userId.toString())
-                        .content(objectMapper.writeValueAsString(request))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("Project is already assigned to the user id: " + userId));
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(externalProjectsDTO)));
 
-        verify(userExternalProjectsService, times(1)).addExternalProjectToUser(userId, request.getExternalProjectName());
+        verify(userExternalProjectsService, times(1)).getExternalProjectsByUser(userId);
     }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void getExternalProjectsByUser_UserNotFound() throws Exception {
+        Long userId = 999L;
+
+        when(userExternalProjectsService.getExternalProjectsByUser(eq(userId)))
+                .thenThrow(new UserNotFoundException("User not found with id: " + userId));
+
+        mockMvc.perform(get("/users/{id}/external-projects", userId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().json("{\"error\":\"User not found with id: " + userId + "\"}"));
+
+        verify(userExternalProjectsService, times(1)).getExternalProjectsByUser(userId);
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void getExternalProjectsByUser_NoProjects() throws Exception {
+        Long userId = 1L;
+
+        List<ExternalProjectsDTO> externalProjectsDTO = new ArrayList<>();
+
+        when(userExternalProjectsService.getExternalProjectsByUser(eq(userId)))
+                .thenReturn(externalProjectsDTO);
+
+        mockMvc.perform(get("/users/{id}/external-projects", userId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(externalProjectsDTO)));
+
+        verify(userExternalProjectsService, times(1)).getExternalProjectsByUser(userId);
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.sky.identity.usermanagement.service;
 
+import com.sky.identity.usermanagement.domain.model.dto.ExternalProjectsDTO;
 import com.sky.identity.usermanagement.domain.model.dto.UserExternalProjectsDTO;
 import com.sky.identity.usermanagement.domain.model.entity.User;
 import com.sky.identity.usermanagement.domain.model.entity.UserExternalProject;
@@ -13,12 +14,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -100,4 +103,56 @@ class UserExternalProjectsServiceTest {
         verify(userExternalProjectsRepository, times(1)).save(any(UserExternalProject.class));
     }
 
+    @Test
+    void getExternalProjectsByUser_UserHasProjects() {
+        Long userId = 1L;
+        User user = new User(userId, "test@example.com", "password", "username", Set.of(), Set.of());
+
+        UserExternalProject project1 = new UserExternalProject(1L, "Project 1", null);
+        UserExternalProject project2 = new UserExternalProject(2L, "Project 2", null);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userExternalProjectsRepository.findAllByUserId(userId))
+                .thenReturn(List.of(project1, project2));
+
+        List<ExternalProjectsDTO> result = userExternalProjectsService.getExternalProjectsByUser(userId);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("Project 1", result.get(0).getProjectName());
+        assertEquals("Project 2", result.get(1).getProjectName());
+
+        verify(userExternalProjectsRepository, times(1)).findAllByUserId(userId);
+    }
+
+    @Test
+    void getExternalProjectsByUser_UserHasNoProjects() {
+        Long userId = 1L;
+        User user = new User(userId, "test@example.com", "password", "username", Set.of(), Set.of());
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userExternalProjectsRepository.findAllByUserId(userId))
+                .thenReturn(List.of());
+
+        List<ExternalProjectsDTO> result = userExternalProjectsService.getExternalProjectsByUser(userId);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(userExternalProjectsRepository, times(1)).findAllByUserId(userId);
+    }
+
+    @Test
+    void getExternalProjectsByUser_UserNotFound() {
+        Long userId = 999L;
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () ->
+                userExternalProjectsService.getExternalProjectsByUser(userId));
+
+        assertEquals("User not found with id: " + userId, exception.getMessage());
+        verify(userRepository, times(1)).findById(userId);
+        verify(userExternalProjectsRepository, never()).findAllByUserId(userId);
+    }
 }
