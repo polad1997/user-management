@@ -159,7 +159,7 @@ public class UserServiceTest {
 
     @Test
     public void testUpdateUserPassword_Success() {
-        UpdatePasswordRequest request = new UpdatePasswordRequest(1L, "newPassword");
+        UpdatePasswordRequest request = new UpdatePasswordRequest("newPassword");
         User user = new User();
         user.setId(1L);
         user.setUsername("username");
@@ -169,7 +169,7 @@ public class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
 
-        UserDTO userDTO = userService.updateUserPassword(request);
+        UserDTO userDTO = userService.updateUserPassword(user.getId(), request);
 
         assertNotNull(userDTO);
         assertEquals("encodedNewPassword", user.getPassword());

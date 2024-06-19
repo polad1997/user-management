@@ -11,8 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdatePasswordRequest {
 
-    public Long id;
-
     @NotNull(message = "Password is mandatory")
     @NotEmpty(message = "Password is mandatory")
     public String password;

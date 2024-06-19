@@ -187,12 +187,11 @@ class UserResourceTest {
     void updateUserPassword_Success() throws Exception {
         Long userId = 1L;
         UpdatePasswordRequest request = new UpdatePasswordRequest();
-        request.setId(userId);
         request.setPassword("newpassword");
 
         UserDTO userDTO = new UserDTO(userId, "testuser@example.com", "testuser");
 
-        when(userService.updateUserPassword(request)).thenReturn(userDTO);
+        when(userService.updateUserPassword(userId, request)).thenReturn(userDTO);
 
         mockMvc.perform(put("/users/{id}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -202,7 +201,7 @@ class UserResourceTest {
                 .andExpect(jsonPath("$.email").value("testuser@example.com"))
                 .andExpect(jsonPath("$.username").value("testuser"));
 
-        verify(userService, times(1)).updateUserPassword(request);
+        verify(userService, times(1)).updateUserPassword(userId, request);
     }
 
     @Test
@@ -210,10 +209,9 @@ class UserResourceTest {
     void updateUserPassword_UserNotFound() throws Exception {
         Long userId = 999L;
         UpdatePasswordRequest request = new UpdatePasswordRequest();
-        request.setId(userId);
         request.setPassword("newpassword");
 
-        when(userService.updateUserPassword(request)).thenThrow(new UserNotFoundException("User not found with id: " + userId));
+        when(userService.updateUserPassword(userId, request)).thenThrow(new UserNotFoundException("User not found with id: " + userId));
 
         mockMvc.perform(put("/users/{id}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -221,19 +219,19 @@ class UserResourceTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("User not found with id: " + userId));
 
-        verify(userService, times(1)).updateUserPassword(request);
+        verify(userService, times(1)).updateUserPassword(userId, request);
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateUser_PasswordIsMandatory() throws Exception {
         UpdatePasswordRequest request = new UpdatePasswordRequest();
-        request.setId(1L);
+        Long userId = 1L;
         request.setPassword("");
 
-        when(userService.updateUserPassword(request)).thenReturn(new UserDTO());
+        when(userService.updateUserPassword(userId, request)).thenReturn(new UserDTO());
 
-        mockMvc.perform(put("/users/{id}", request.getId())
+        mockMvc.perform(put("/users/{id}", userId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())

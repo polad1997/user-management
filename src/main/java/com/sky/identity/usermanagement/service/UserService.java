@@ -43,8 +43,8 @@ public class UserService {
         return new UserDTO(user.getId(), user.getEmail(), user.getUsername());
     }
 
-    public UserDTO updateUserPassword(UpdatePasswordRequest request) {
-        var user = userRepository.findById(request.getId()).orElseThrow(() -> new UserNotFoundException("User not found with id: " + request.getId()));
+    public UserDTO updateUserPassword(Long id, UpdatePasswordRequest request) {
+        var user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
         return new UserDTO(user.getId(), user.getEmail(), user.getUsername());

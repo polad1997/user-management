@@ -36,8 +36,8 @@ public class UserResource {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserDTO> updateUserPassword(@RequestBody @Valid UpdatePasswordRequest request) {
-        var response = userService.updateUserPassword(request);
+    public ResponseEntity<UserDTO> updateUserPassword(@PathVariable Long id, @RequestBody @Valid UpdatePasswordRequest request) {
+        var response = userService.updateUserPassword(id, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
