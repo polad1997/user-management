@@ -29,7 +29,7 @@
 
     <changeSet id="adjust-user-id-sequence" author="P.Algayev">
         <sql>
-            SELECT setval('users_id_seq', 1);
+            SELECT setval('users_id_seq', 2);
         </sql>
     </changeSet>
 
@@ -40,6 +40,16 @@
             <column name="password"
                     value="$2a$12$NAySfD/B5H.NYGB8CxtFkeUkncY7NQ3h4289AooUpj2d66ozzlrl6"/>  <!--password: adminpassword -->
             <column name="username" value="ADMIN"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-default-user" author="P.Algayev">
+        <insert tableName="users">
+            <column name="id" value="2"/>
+            <column name="email" value="user@user.com"/>
+            <column name="password"
+                    value="$2a$12$2mbgd/bC5H2MIitv6cwnDO/d.CriZgCGmSfDN.4C75qH9AvEQ1oXC"/>  <!--password: userpassword -->
+            <column name="username" value="USER"/>
         </insert>
     </changeSet>
 
@@ -87,7 +97,6 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
         </createTable>
-        </createTable>
 
         <addForeignKeyConstraint
                 baseTableName="users_roles"
@@ -108,6 +117,13 @@
         <insert tableName="users_roles">
             <column name="user_id" value="1"/>
             <column name="role_id" value="1"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="assign-user-role-to-default-user" author="P.Algayev">
+        <insert tableName="users_roles">
+            <column name="user_id" value="2"/>
+            <column name="role_id" value="2"/>
         </insert>
     </changeSet>
 

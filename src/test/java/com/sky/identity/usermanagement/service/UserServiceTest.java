@@ -128,15 +128,18 @@ public class UserServiceTest {
 
     @Test
     public void testDeleteUserById_Success() {
-        when(userRepository.existsById(1L)).thenReturn(true);
+        User normalUser = new User();
+        normalUser.setId(3L);
+        normalUser.setUsername("normaluser");
 
-        doNothing().when(userRepository).deleteById(1L);
+        when(userRepository.findById(3L)).thenReturn(Optional.of(normalUser));
+        doNothing().when(userRepository).deleteById(3L);
 
         assertDoesNotThrow(() -> {
-            userService.deleteUserById(1L);
+            userService.deleteUserById(3L);
         });
 
-        verify(userRepository, times(1)).deleteById(1L);
+        verify(userRepository, times(1)).deleteById(3L);
     }
 
     @Test
@@ -168,5 +171,35 @@ public class UserServiceTest {
         assertEquals("encodedNewPassword", user.getPassword());
         assertEquals(1L, userDTO.getId());
         verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    public void testDeleteUserById_DefaultAdminUser() {
+        User adminUser = new User();
+        adminUser.setId(1L);
+        adminUser.setUsername("ADMIN");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(adminUser));
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            userService.deleteUserById(1L);
+        });
+
+        assertEquals("Default user cannot be deleted", exception.getMessage());
+    }
+
+    @Test
+    public void testDeleteUserById_DefaultRegularUser() {
+        User regularUser = new User();
+        regularUser.setId(2L);
+        regularUser.setUsername("USER");
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(regularUser));
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            userService.deleteUserById(2L);
+        });
+
+        assertEquals("Default user cannot be deleted", exception.getMessage());
     }
 }

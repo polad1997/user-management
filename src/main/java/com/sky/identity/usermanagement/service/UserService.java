@@ -51,9 +51,17 @@ public class UserService {
     }
 
     public void deleteUserById(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new UserNotFoundException("User not found with id: " + id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+
+        if (isDefaultUser(user)) {
+            throw new IllegalArgumentException("Default user cannot be deleted");
         }
+
         userRepository.deleteById(id);
+    }
+
+    private boolean isDefaultUser(User user) {
+        return "ADMIN".equals(user.getUsername()) || "USER".equals(user.getUsername());
     }
 }
