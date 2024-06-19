@@ -7,7 +7,6 @@ import com.sky.identity.usermanagement.domain.model.request.CreateUserRequest;
 import com.sky.identity.usermanagement.domain.model.request.UpdatePasswordRequest;
 import com.sky.identity.usermanagement.domain.repository.RoleRepository;
 import com.sky.identity.usermanagement.domain.repository.UserRepository;
-import com.sky.identity.usermanagement.exception.UserAlreadyExistsException;
 import com.sky.identity.usermanagement.exception.UserNotFoundException;
 import com.sky.identity.usermanagement.validator.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,10 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 
@@ -202,4 +198,5 @@ public class UserServiceTest {
 
         assertEquals("Default user cannot be deleted", exception.getMessage());
     }
+
 }

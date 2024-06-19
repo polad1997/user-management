@@ -2,7 +2,6 @@ package com.sky.identity.usermanagement.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sky.identity.usermanagement.domain.model.dto.UserDTO;
-import com.sky.identity.usermanagement.domain.model.entity.User;
 import com.sky.identity.usermanagement.domain.model.request.CreateUserRequest;
 import com.sky.identity.usermanagement.domain.model.request.UpdatePasswordRequest;
 import com.sky.identity.usermanagement.domain.repository.UserRepository;
@@ -25,10 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;

@@ -13,20 +13,20 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-#  app:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    container_name: user-management-app
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sky_identity_db
-#      SPRING_DATASOURCE_USERNAME: dbuser
-#      SPRING_DATASOURCE_PASSWORD: dbpassword
-#      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-#    depends_on:
-#      - postgres
-#    ports:
-#      - "8080:8080"
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: user-management-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sky_identity_db
+      SPRING_DATASOURCE_USERNAME: dbuser
+      SPRING_DATASOURCE_PASSWORD: dbpassword
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
 
 volumes:
   postgres_data:

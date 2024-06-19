@@ -58,6 +58,8 @@ public class UserService {
             throw new IllegalArgumentException("Default user cannot be deleted");
         }
 
+        user.getRoles().clear();
+        userRepository.save(user);
         userRepository.deleteById(id);
     }
 
