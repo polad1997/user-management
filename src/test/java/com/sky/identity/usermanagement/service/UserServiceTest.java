@@ -7,6 +7,7 @@ import com.sky.identity.usermanagement.domain.model.request.CreateUserRequest;
 import com.sky.identity.usermanagement.domain.model.request.UpdatePasswordRequest;
 import com.sky.identity.usermanagement.domain.repository.RoleRepository;
 import com.sky.identity.usermanagement.domain.repository.UserRepository;
+import com.sky.identity.usermanagement.exception.UserAlreadyExistsException;
 import com.sky.identity.usermanagement.exception.UserNotFoundException;
 import com.sky.identity.usermanagement.validator.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -81,19 +83,25 @@ public class UserServiceTest {
         assertEquals("username", userDTO.getUsername());
     }
 
-//    @Test  fixme
-//    public void testCreateUser_EmailAlreadyExists() {
-//        CreateUserRequest request = new CreateUserRequest("username", "email@example.com", "password");
-//
-//        when(userRepository.findByUsername("username")).thenReturn(Optional.empty());
-//        when(userRepository.findByEmail("email@example.com")).thenReturn(Optional.of(new User()));
-//
-//        Exception exception = assertThrows(UserAlreadyExistsException.class, () -> {
-//            userService.createUser(request);
-//        });
-//
-//        assertEquals("Email already exists", exception.getMessage());
-//    }
+    @Test
+    void createUser_EmailAlreadyExists() {
+        CreateUserRequest request = new CreateUserRequest();
+        request.setEmail("test@example.com");
+        request.setUsername("testuser");
+        request.setPassword("password");
+
+        doThrow(new UserAlreadyExistsException("Email already exists")).when(userValidator).validateUser("testuser", "test@example.com");
+
+        UserAlreadyExistsException exception = assertThrows(UserAlreadyExistsException.class, () ->
+                userService.createUser(request)
+        );
+
+        assertEquals("Email already exists", exception.getMessage());
+        verify(userValidator, times(1)).validateUser("testuser", "test@example.com");
+        verify(userRepository, never()).save(any(User.class));
+        verify(passwordEncoder, never()).encode(anyString());
+        verify(roleService, never()).getdefaultUserRole();
+    }
 
     @Test
     public void testGetUserById_Success() {
