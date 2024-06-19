@@ -6,8 +6,11 @@ import com.sky.identity.usermanagement.domain.model.entity.User;
 import com.sky.identity.usermanagement.domain.model.entity.UserExternalProject;
 import com.sky.identity.usermanagement.domain.repository.UserExternalProjectsRepository;
 import com.sky.identity.usermanagement.domain.repository.UserRepository;
+import com.sky.identity.usermanagement.exception.ProjectAlreadyAssignedException;
 import com.sky.identity.usermanagement.exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class UserExternalProjectsService {
@@ -26,32 +29,19 @@ public class UserExternalProjectsService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
         checkIfProjectAlreadyAssigned(user, projectName);
-        var project = findOrCreateProject(user, projectName);
-        userExternalProjectsRepository.save(project);
+        var project = createNewProject(user, projectName);
+        var savedProject = userExternalProjectsRepository.save(project);
 
         UserDTO userDTO = new UserDTO(user.getId(), user.getEmail(), user.getUsername());
 
-        return new UserExternalProjectsDTO(userDTO, project.getId(), project.getName());
+        return new UserExternalProjectsDTO(userDTO, savedProject.getId(), savedProject.getName());
     }
 
     private void checkIfProjectAlreadyAssigned(User user, String projectName) {
-        boolean projectExists = user.getExternalProjects()
-                .stream()
-                .anyMatch(project -> project.getName().equals(projectName));
-        if (projectExists) {
-            throw new RuntimeException("Project is already assigned to the user: " + user.getUsername());
+        Optional<UserExternalProject> existingProject = userExternalProjectsRepository.findByNameAndUserId(projectName, user.getId());
+        if (existingProject.isPresent()) {
+            throw new ProjectAlreadyAssignedException("Project is already assigned to the user id: " + user.getId());
         }
-    }
-
-    private UserExternalProject findOrCreateProject(User user, String projectName) {
-        return userExternalProjectsRepository.findByName(projectName)
-                .map(existingProject -> updateExistingProject(user, existingProject))
-                .orElseGet(() -> createNewProject(user, projectName));
-    }
-
-    private UserExternalProject updateExistingProject(User user, UserExternalProject existingProject) {
-        existingProject.setUser(user);
-        return existingProject;
     }
 
     private UserExternalProject createNewProject(User user, String projectName) {

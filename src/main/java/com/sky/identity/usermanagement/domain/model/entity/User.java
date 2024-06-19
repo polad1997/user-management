@@ -38,8 +38,8 @@ public class User {
 
     private String username;
 
-    @OneToMany(mappedBy = "user")
-    private Set<UserExternalProject> externalProjects;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<UserExternalProject> externalProjects = new HashSet<>();
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(

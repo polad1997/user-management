@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserExternalProjectsDTO {
 
-    UserDTO user;
+    UserDTO userDTO;
     Long id;
     String projectName;
 }

@@ -77,7 +77,8 @@ class UserResourceTest {
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createUserRequest))).andExpect(status().isCreated())
+                        .content(objectMapper.writeValueAsString(createUserRequest)))
+                .andExpect(status().isCreated())
                 .andExpect(result -> assertEquals(HttpStatus.CREATED.value(), result.getResponse().getStatus()))
                 .andExpect(jsonPath("$.email").value("testuser@example.com"))
                 .andExpect(jsonPath("$.username").value("testuser"));

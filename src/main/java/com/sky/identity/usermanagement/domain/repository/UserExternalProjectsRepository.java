@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface UserExternalProjectsRepository extends JpaRepository<UserExternalProject, String> {
 
     Optional<UserExternalProject> findByName(String projectName);
+
+    Optional<UserExternalProject> findByNameAndUserId(String projectName, Long userId);
 }

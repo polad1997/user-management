@@ -134,7 +134,7 @@
             </not>
         </preConditions>
         <createTable tableName="user_external_projects">
-            <column name="id" type="BIGINT">
+            <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="user_id" type="BIGINT">
@@ -147,8 +147,15 @@
         <addForeignKeyConstraint
                 baseTableName="user_external_projects"
                 baseColumnNames="user_id"
-                constraintName="fk_user_id"
+                constraintName="fk_user_external_projects_user_id"
                 referencedTableName="users"
                 referencedColumnNames="id"/>
     </changeSet>
+
+    <changeSet id="adjust-user-external-project-id-sequence" author="P.Algayev">
+        <sql>
+            SELECT setval('user_external_projects_id_seq', 1);
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

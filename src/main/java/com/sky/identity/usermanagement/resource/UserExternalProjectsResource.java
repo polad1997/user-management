@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/users/{id}/external-projects/")
+@RequestMapping("/users/{id}/external-projects")
 public class UserExternalProjectsResource {
 
     private final UserExternalProjectsService userExternalProjectsService;

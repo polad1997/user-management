@@ -41,4 +41,12 @@ public class CustomGlobalExceptionHandler {
         error.put("error", ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ProjectAlreadyAssignedException.class)
+    public ResponseEntity<Map<String, String>> handleProjectAlreadyAssignedException(ProjectAlreadyAssignedException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
 }
