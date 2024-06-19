@@ -171,6 +171,19 @@ class UserResourceTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    void getUser_NotFound() throws Exception {
+        Long userId = 23456L;
+
+        when(userService.getUserById(userId)).thenThrow(new UserNotFoundException("User not found with id: " + userId));
+
+        mockMvc.perform(get("/users/{id}", userId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("User not found with id: " + userId));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
     void updateUserPassword_Success() throws Exception {
         Long userId = 1L;
         UpdatePasswordRequest request = new UpdatePasswordRequest();
@@ -213,19 +226,6 @@ class UserResourceTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void getUser_NotFound() throws Exception {
-        Long userId = 23456L;
-
-        when(userService.getUserById(userId)).thenThrow(new UserNotFoundException("User not found with id: " + userId));
-
-        mockMvc.perform(get("/users/{id}", userId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("User not found with id: " + userId));
-    }
-
-    @Test
-    @WithMockUser(roles = "USER")
     void updateUser_PasswordIsMandatory() throws Exception {
         UpdatePasswordRequest request = new UpdatePasswordRequest();
         request.setId(1L);
@@ -239,5 +239,4 @@ class UserResourceTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.password").value("Password is mandatory"));
     }
-
 }
