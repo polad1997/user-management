@@ -133,7 +133,7 @@ class UserResourceTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void getUser_Success() throws Exception {
+    void getUser_Success_Admin() throws Exception {
         Long userId = 1L;
 
         UserDTO userDTO = new UserDTO();
@@ -154,12 +154,23 @@ class UserResourceTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void getUser_Forbidden() throws Exception {
+    void getUser_Success_User() throws Exception {
         Long userId = 1L;
 
-        mockMvc.perform(get("/users/{id}", userId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(userId);
+        userDTO.setUsername("poladtestuser");
+        userDTO.setEmail("testuser@example.com");
+
+        when (userService.getUserById(userId)).thenReturn(userDTO);
+
+        userResource.getUser(userId);
+
+        verify(userService, times(1)).getUserById(userId);
+        mockMvc.perform(get("/users/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("poladtestuser@example.com"))
+                .andExpect(jsonPath("$.username").value("poladtestuser"));
     }
 
     @Test
@@ -175,4 +186,7 @@ class UserResourceTest {
                 .andExpect(jsonPath("$.error").value("User not found with id: " + userId));
     }
 
+
+    //fixme delete
+    //fixme update
 }
