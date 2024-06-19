@@ -2,16 +2,19 @@ package com.sky.identity.usermanagement.resource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sky.identity.usermanagement.domain.model.dto.UserDTO;
+import com.sky.identity.usermanagement.domain.model.entity.User;
 import com.sky.identity.usermanagement.domain.model.request.CreateUserRequest;
+import com.sky.identity.usermanagement.domain.model.request.UpdatePasswordRequest;
+import com.sky.identity.usermanagement.domain.repository.UserRepository;
 import com.sky.identity.usermanagement.exception.UserAlreadyExistsException;
 import com.sky.identity.usermanagement.exception.UserNotFoundException;
 import com.sky.identity.usermanagement.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -22,13 +25,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,11 +49,13 @@ class UserResourceTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Mock
+    @MockBean
     private UserService userService;
 
     @InjectMocks
     private UserResource userResource;
+    @Autowired
+    private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
@@ -74,16 +79,14 @@ class UserResourceTest {
 
         when(userService.createUser(createUserRequest)).thenReturn(userDTO);
 
-        userResource.createUser(createUserRequest);
-
-        verify(userService, times(1)).createUser(createUserRequest);
-
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createUserRequest))).andExpect(status().isCreated())
                 .andExpect(result -> assertEquals(HttpStatus.CREATED.value(), result.getResponse().getStatus()))
                 .andExpect(jsonPath("$.email").value("testuser@example.com"))
                 .andExpect(jsonPath("$.username").value("testuser"));
+
+        verify(userService, times(1)).createUser(createUserRequest);
     }
 
     @Test
@@ -131,8 +134,85 @@ class UserResourceTest {
                 .andExpect(jsonPath("$.error").value("Username already exists"));
     }
 
-    //fixme delete
-    //fixme update
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void deleteUser_Success() throws Exception {
+        Long userId = 1L;
+
+        doNothing().when(userService).deleteUserById(userId);
+
+        mockMvc.perform(delete("/users/{id}", userId))
+                .andExpect(status().isNoContent());
+
+        verify(userService, times(1)).deleteUserById(userId);
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void deleteUser_Success_User_Forbidden() throws Exception {
+        Long userId = 1L;
+
+        doNothing().when(userService).deleteUserById(userId);
+
+        mockMvc.perform(delete("/users/{id}", userId))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void deleteUser_NotFound() throws Exception {
+        Long userId = 999L;
+
+        doThrow(new UserNotFoundException("User not found with id: " + userId)).when(userService).deleteUserById(userId);
+
+        mockMvc.perform(delete("/users/{id}", userId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("User not found with id: " + userId));
+
+        verify(userService, times(1)).deleteUserById(userId);
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateUserPassword_Success() throws Exception {
+        Long userId = 1L;
+        UpdatePasswordRequest request = new UpdatePasswordRequest();
+        request.setId(userId);
+        request.setPassword("newpassword");
+
+        UserDTO userDTO = new UserDTO(userId, "testuser@example.com", "testuser");
+
+        when(userService.updateUserPassword(request)).thenReturn(userDTO);
+
+        mockMvc.perform(put("/users/{id}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.email").value("testuser@example.com"))
+                .andExpect(jsonPath("$.username").value("testuser"));
+
+        verify(userService, times(1)).updateUserPassword(request);
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateUserPassword_UserNotFound() throws Exception {
+        Long userId = 999L;
+        UpdatePasswordRequest request = new UpdatePasswordRequest();
+        request.setId(userId);
+        request.setPassword("newpassword");
+
+        when(userService.updateUserPassword(request)).thenThrow(new UserNotFoundException("User not found with id: " + userId));
+
+        mockMvc.perform(put("/users/{id}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("User not found with id: " + userId));
+
+        verify(userService, times(1)).updateUserPassword(request);
+    }
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -147,5 +227,20 @@ class UserResourceTest {
                 .andExpect(jsonPath("$.error").value("User not found with id: " + userId));
     }
 
+    @Test
+    @WithMockUser(roles = "USER")
+    void updateUser_PasswordIsMandatory() throws Exception {
+        UpdatePasswordRequest request = new UpdatePasswordRequest();
+        request.setId(1L);
+        request.setPassword("");
+
+        when(userService.updateUserPassword(request)).thenReturn(new UserDTO());
+
+        mockMvc.perform(put("/users/{id}", request.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.password").value("Password is mandatory"));
+    }
 
 }

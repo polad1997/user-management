@@ -128,6 +128,8 @@ public class UserServiceTest {
 
     @Test
     public void testDeleteUserById_Success() {
+        when(userRepository.existsById(1L)).thenReturn(true);
+
         doNothing().when(userRepository).deleteById(1L);
 
         assertDoesNotThrow(() -> {
@@ -166,20 +168,5 @@ public class UserServiceTest {
         assertEquals("encodedNewPassword", user.getPassword());
         assertEquals(1L, userDTO.getId());
         verify(userRepository, times(1)).save(user);
-    }
-
-
-    @Test
-    public void testUpdateUserPassword_InvalidPassword() {
-        UpdatePasswordRequest request = new UpdatePasswordRequest(1L, "");
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
-        when(passwordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.updateUserPassword(request);
-        });
-
-        assertEquals("Password must not be empty", exception.getMessage());
     }
 }

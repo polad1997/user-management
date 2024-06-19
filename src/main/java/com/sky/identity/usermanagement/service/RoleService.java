@@ -17,4 +17,3 @@ public class RoleService {
         return roleRepository.findByName("ROLE_USER").orElseThrow(() -> new IllegalStateException("There is no default (USER) role in the database."));
     }
 }
-//fixme check ele user add edende role user olur. new role set olmur

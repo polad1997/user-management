@@ -24,9 +24,6 @@
             <column name="username" type="VARCHAR(120)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="is_active" type="boolean">
-                <constraints nullable="false"/>
-            </column>
         </createTable>
     </changeSet>
 
@@ -43,7 +40,6 @@
             <column name="password"
                     value="$2a$12$NAySfD/B5H.NYGB8CxtFkeUkncY7NQ3h4289AooUpj2d66ozzlrl6"/>  <!--password: adminpassword -->
             <column name="username" value="ADMIN"/>
-            <column name="is_active" value="true"/>
         </insert>
     </changeSet>
 
@@ -90,6 +86,7 @@
             <column name="role_id" type="BIGINT">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
+        </createTable>
         </createTable>
 
         <addForeignKeyConstraint

@@ -36,9 +36,6 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private Boolean isActive = true;
-
     private String username;
 
     @OneToMany(mappedBy = "user")
