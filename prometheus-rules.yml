@@ -1,0 +1,68 @@
+groups:
+  - name: sky_identity_user_management_rules
+    rules:
+      - record: heap_memory_usage_percentage
+        expr: (sum by (instance)(jvm_memory_used_bytes{area="heap"}) / sum by (instance)(jvm_memory_max_bytes{area="heap"})) * 100
+
+      - alert: HighCPUUsage
+        expr: sum(rate(process_cpu_seconds_total[1m])) by (instance) > 0.5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected on {{ $labels.instance }}"
+          description: "CPU usage is above 50% for more than 1 minute."
+
+      - alert: HighMemoryUsage
+        expr: sum(container_memory_usage_bytes{container_name="app"}) / sum(machine_memory_bytes) > 0.8
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High memory usage detected on {{ $labels.instance }}"
+          description: "Memory usage is above 80% for more than 5 minutes."
+
+      - alert: HighJVMHeapUsage
+        expr: (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"}) > 0.75
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High JVM heap memory usage detected on {{ $labels.instance }}"
+          description: "JVM heap memory usage is above 75% for more than 5 minutes."
+
+      - alert: HighHttpRequestLatency
+        expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le)) > 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High HTTP request latency detected on {{ $labels.instance }}"
+          description: "95th percentile latency of HTTP requests is above 1 second for more than 5 minutes."
+
+      - alert: HighDiskSpaceUsage
+        expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"} > 0.85
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High disk space usage detected on {{ $labels.instance }}"
+          description: "Disk space usage is above 85% for more than 10 minutes."
+
+      - alert: InstanceDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance down detected on {{ $labels.instance }}"
+          description: "The instance {{ $labels.instance }} is down for more than 5 minutes."
+
+      - alert: HighErrorRate
+        expr: rate(http_server_requests_seconds_count{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected on {{ $labels.instance }}"
+          description: "Error rate is above 5% for more than 5 minutes."

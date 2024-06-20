@@ -17,7 +17,7 @@ To get started, clone the repository and navigate into the project directory:
 `docker-compose up --build`
 
 
-## Application Behavoir:
+## Application Behavior:
 - ### Initial Users:
     - Admin User:
       - email: admin@admin.com
@@ -33,6 +33,9 @@ To get started, clone the repository and navigate into the project directory:
     - All read operations require either ADMIN or USER authentication.
     - Default role for new users is ROLE_USER.
 
+## Application Ports
+- ### Application: http://localhost:8080
+- ### Prometheus: http://localhost:9090
 
 ## Features
 - ### Authentication:
@@ -47,7 +50,8 @@ To get started, clone the repository and navigate into the project directory:
     - Retrieve external projects associated with a user
 - ### Testing
     - Unit tests to ensure the correctness of the endpoints and service logic
-
+- ### Monitoring
+    - Prometheus for monitoring the application
 
 ## API Documentation
 - ### User Management Endpoint:
